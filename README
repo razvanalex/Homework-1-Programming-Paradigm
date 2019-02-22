@@ -1,0 +1,181 @@
+-------------------------------------------------------------------------------
+                            Tema 1 - PP
+-------------------------------------------------------------------------------
+
+AUTOR: Smadu Razvan-Alexandru 325CB
+
+FISIERE INCLUSE:
+    - README
+    - Tema1.hs
+
+README
+    Cerinta 1.
+        Recurenta pe care am implementat-o pentru aceasta cerinta este 
+        urmatoarea:
+
+            dp[i] =   min   { dp[j] + lt[j][i] },  i = 2:n
+                    j=1:i-1
+        
+        unde dp -> costul pentru cea mai scurta cale pana la nodul i, incepand
+                   de la nodul 1. Pentru eficienta, se retine defapt un tuplu
+                   de forma (calea_parcursa_pana_la_i, costul_asociat)
+            lt[i][j] -> costul asociat muchiei (i,j)
+        
+        Cazul de baza este: i == 0 => ([], Infinit)
+                            i == 1 => ([], 0)
+
+        Cu alte cuvinte, la fiecare nod i, se cauta calea minima; raspunsul 
+        fiind dp[n], unde n reprezinta nodul destinatie.
+
+        Detalii despre implementare
+            Pentru a aplica programare dinamica (si lazy evaluation) am folosit
+            un tablou de tip listArray, in care sunt retinute functii ce 
+            calculeaza costul minim pana la nodul i. Functia dp, care este 
+            retinuta in listArray-ul vect, implementeaza dinamica gasita mai 
+            sus. Pentru formula de recurenta, unde trebuie calculat minimul,
+            se genereaza toate posibilitatile pana la nodul i, si se alege 
+            tuplul minim (care are costul cel mai mic). Functia allVal genereaza
+            toate posibilitatile, pornind de la nodul i-1, la 0 si adauga cate 
+            un tuplu pentru fiecare cale gasita. La final, cand s-a gasit 
+            perechea minima care reprezinta drumul minim impreuna cu costul 
+            asociat, se adauga si ultimul nod (care nu este adaugat de 
+            recurenta) si se returneaza valoarea finala. Pentru a face mai 
+            usoara implementarea recurentei, am definit tipul de date Number a
+            care poate fi un numar finit (Only a), sau inifinit (Infinite).
+            Am inrolat acest tip claselor Num a, Eq a si Ord a, pentru a putea
+            folosi operatiile aritmetice si logice pentru aceste numere. 
+            Astfel, daca intre 2 noduri nu exista muchie, se considera dinstanta
+            dintre ele egala cu infinit. Aceasta valoare este considerata 
+            pozitiva pentru a putea alege minimul. 
+
+            Functia getCost este implementata utilizand memoizarea (se retine 
+            calculul costului, daca este nevoie sa se refoloseasca). De 
+            asemenea, implementarea este facuta pentru grafuri orientate (pentru
+            o implementare de graf neorientat, se poate vedea la Cerinta 2).
+
+            Functia toInt "converteste" tipul Number Int la tipul Int.
+
+            Evaluarea este lenesa in aceasta implementare (daca nu este nevoie 
+            de un calcul, de exemplu: la cost, nu se evalueaza; la dinamica, se 
+            evalueaza dp[i], atunci cand se ajunge la el cu evaluarea, pana 
+            in acel moment ramane neevaluat).
+
+
+    Cerinta 2.
+        Pentru aceasta cerinta, am implementat urmatoarea recurenta (care se 
+        aseamana cu recurenta de la prima cerinta):
+
+            dp[i][s] =   min  { dp[j][s + tax[i]] + lt[j][i] },  i=1,n
+                        j=1,n 
+                        j!=i
+            (se iau doar nodurile adiacente pentru optimizare)
+            
+        Cazul de baza:  dp[0][s] = [],       s <= m
+                        dp[0][s] = Infinit,  s > m
+                        dp[1][s] = 0
+
+        unde dp[i][s] -> drumul minim pana la nodul i, folosind s bani.
+                lt[i][j] -> costul asociat muchiei (i,j) sau (j,i)
+
+        Explicatia recurentei:
+            Aceasta recurenta functioneaza deoarece se retin toate drumurile
+            pana la nodul i, folosind o suma de bani s, iar raspunsul este 
+            valoarea costul minim pentru care se obtine suma minima de bani.
+            De exemplu: 
+                Fie urmatorul set de date (5-longer-cheaper.in) - este 
+            prezentat doar principiul, nu este o rulare manuala:
+
+            n = 3; m = 2, tax = [1,2,1], lt = [(1,3,3), (1,2,1), (2,3,1)]
+
+            Ne intereseaza valorile de pe ultima linie a matricei dp. Deci:
+                dp[3][0] = min { dp[1][1] + 3, dp[2][1] + 1 }
+                
+            Pentru evaluarea lui dp[3][0], trebuie evaluate dp[1][1] si 
+            dp[2][1]:
+                dp[1][1] = 0    // caz de baza
+                dp[2][1] = min { dp[1][3] + 1, dp[3][3] + 1 }
+                    dp[1][3] = Nothing  // suma este mai mare decat m
+                    dp[3][3] = Nothing  // suma este mai mare decat m
+                
+                dp[2][1] = Nothing
+
+                dp[3][0] = min { 3 } = 3
+
+            Analog si pentru dp[3][1] si dp[3][2].
+
+            Raspunsul final este: 3, pe calea [1, 3]
+
+            Dupa cum se poate observa, nu este neaparat nevoie sa se 
+            evalueze toate campurile din matricea dp.
+            
+        Detalii de implementare
+            Pentru rezolvarea acestei cerinte, se utilizeaza lazy evaluation 
+            folosindu-se o matrice de functii dp in care se retin rezultatele 
+            partiale. 
+            
+            Functia getCost returneaza costul muchiei (i,j) sau (j,i). Pentru a 
+            utiliza evaluarea lenesa, s-a retinut aceasta functie in matricea 
+            cost.
+
+            ListArray-ul tax este folosit pentru a accesa elementele mai usor 
+            din lista de taxe de intrare in orase.
+
+            Functia allVal calculeaza toate drumurile posibile cu costurile 
+            asociate. Din lista rezultata se extrage minimul, in functia dp.
+
+            Functia dp implementeaza recurenta. Matricea mat contine aceasta 
+            functie in fiecare element al matricei.
+
+            Functia computeResult aranjeaza rezultatul final pentru a respecta 
+            cerintele impuse. Adauga la final si nodul n, si pentru fiecare 
+            nod parcurs, se ataseaza si suma de bani ramasa.
+
+            Functia getFinalResult returneaza toate drumurile pana la nodul n, 
+            de diferite costuri, si sume de bani ramase. In final se cauta 
+            minimul din aceasta lista, sau se returneaza Nothing daca daca lista
+            e vida.
+
+    Detalii legate de timpul de executie si rezultatul obtinut in checker, sunt 
+    disponibile in sectiunea urmatoare. Doar testele 11 si 12 de la costuri 
+    dureaza mai mult (impreuna dureaza cam 15 secunde datorita faptului ca 
+    matricile generate sunt destul de mari, si parcurgerea dureaza)
+
+    Rezultat checker local:
+        $ time runhaskell Checker.hs both
+
+        Running costs tests:
+        1-smoke ................. OK
+        2-basic-fail ............ OK
+        3-multiple-edges ........ OK
+        4-longer-edge ........... OK
+        5-longer-cheaper ........ OK
+        6-take-cheaper .......... OK
+        7-complex1 .............. OK
+        8-complex2 .............. OK
+        9-complex3 .............. OK
+        10-complex-fail ......... OK
+        11-stress1 .............. OK
+        12-stress2 .............. OK
+
+                        TOTAL: 12/12
+
+        Running simple tests:
+        1-smoke ................. OK
+        2-basic-fail ............ OK
+        3-multiple-edges ........ OK
+        4-diamond ............... OK
+        5-shorter-detour ........ OK
+        6-longer-detour ......... OK
+        7-multipath ............. OK
+        8-complex1 .............. OK
+        9-complex2 .............. OK
+        10-complex3 ............. OK
+        11-complex-fail ......... OK
+        12-stress1 .............. OK
+        13-stress2 .............. OK
+
+                        TOTAL: 13/13
+
+        real    0m17.582s
+        user    0m17.438s
+        sys     0m0.087s    
